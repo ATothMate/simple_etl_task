@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from datetime import datetime
+from datetime import date
 
 import pandas as pd
 import psycopg2
@@ -35,11 +35,11 @@ class DeltaLoader():
         self.load(unique_loc_df)
 
     @staticmethod
-    def _get_dateid_from_date(date: datetime.date) -> int:
+    def _get_dateid_from_date(date: date) -> int:
         """Converts a date object to an integer in the format YYYYMMDD.
 
         Args:
-            date (datetime.date): date to convert.
+            date (date): date to convert.
 
         Returns:
             int: date in YYYYMMDD format as an integer.
