@@ -29,7 +29,7 @@ class Archiver():
         logger.debug(f"Initiated {self.__class__.__name__} class.")
 
         self.timestamp = timestamp
-    
+
     @staticmethod
     def _create_archive_folder(archive_folder: Path) -> None:
         """Creates the archive folder if it doesn't exist.
@@ -40,7 +40,7 @@ class Archiver():
         if not archive_folder.exists():
             logger.info(f"Creating archive folder: {archive_folder}.")
             archive_folder.mkdir(parents=True, exist_ok=True)
-    
+
     @staticmethod
     def _save_to_archive(archive_file: Path, entries: List[dict]) -> None:
         """Saves the list of entries to a CSV file in the archive folder.

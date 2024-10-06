@@ -13,7 +13,7 @@ logger = get_logger(__file__)
 BASE_FOLDER = Path(__file__).parents[2]
 
 # Log message template for moving files.
-MOVE_INFO = f"Moving source file: '{{src}}' to destination '{{dst}}'."
+MOVE_INFO = "Moving source file: '{{src}}' to destination '{{dst}}'."
 
 
 def parse_arguments() -> Tuple[str, str]:
@@ -59,6 +59,7 @@ def get_available_files(folder: str) -> List[Path]:
     """
     return sorted(Path(folder).glob("*.csv"))
 
+
 def get_next_file(folder: str) -> Optional[Path]:
     """Retrieves the next available CSV file from the specified folder.
 
@@ -76,6 +77,7 @@ def get_next_file(folder: str) -> Optional[Path]:
     else:
         return None
 
+
 def move_file(src_file: Path, dst_folder: Path) -> None:
     """Moves the specified source file to the destination folder.
 
@@ -88,6 +90,7 @@ def move_file(src_file: Path, dst_folder: Path) -> None:
 
     move(src_file, dst_file)
 
+
 def main(src_folder: str, dest_folder: str) -> None:
     """Main function to handle the relocation of source files.
 
@@ -99,10 +102,10 @@ def main(src_folder: str, dest_folder: str) -> None:
         ValueError: raised if source file does not exist.
     """
     if not Path(src_folder).exists():
-        raise ValueError(f"Source folder does not exist: '{src_folder}'!")
+        raise ValueError("Source folder does not exist: '{src_folder}'!")
 
     if not Path(dest_folder).exists():
-        logger.warning(f"Monitor (destination) folder does not exist!")
+        logger.warning("Monitor (destination) folder does not exist!")
         Path(dest_folder).mkdir(parents=True, exist_ok=True)
         logger.info(f"Monitor (destination) folder created: {dest_folder}")
 
@@ -113,6 +116,7 @@ def main(src_folder: str, dest_folder: str) -> None:
         move_file(src_file=next_file, dst_folder=dest_folder)
     else:
         logger.info("Found no processable file.")
+
 
 if __name__ == "__main__":
     # Parse command line arguments for source and destination folders.

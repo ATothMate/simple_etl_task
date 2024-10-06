@@ -48,12 +48,14 @@ class DBInitializer():
         except (psycopg2.DatabaseError, Exception) as e:
             logger.exception(e)
 
+
 def main():
     """Main entry point for the script.
     Creates an instance of DBInitializer and runs the create_tables method
      to set up the database schema.
     """
     DBInitializer().create_tables()
+
 
 if __name__ == '__main__':
     main()

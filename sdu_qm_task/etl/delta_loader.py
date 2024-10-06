@@ -16,7 +16,7 @@ logger = get_logger(__file__)
 
 class DeltaLoader():
     """Class responsible for loading delta data into the PostgreSQL database.
-    It follows the Extract-Transform-Load (ETL) pattern; extracting new entries 
+    It follows the Extract-Transform-Load (ETL) pattern; extracting new entries
      from a source table, transforming the data as needed, and loading
      it into the target tables.
     """
@@ -79,7 +79,7 @@ class DeltaLoader():
                 delta_loc_cols = [desc[0] for desc in cur.description]
 
         if delta_loc_extract == []:
-            logger.info(f"Extracted 0 new location entry.")
+            logger.info("Extracted 0 new location entry.")
         else:
             logger.info(f"Extracted {len(delta_loc_extract)} new location entries.")
 
@@ -97,11 +97,11 @@ class DeltaLoader():
             pd.DataFrame: DataFrame with transformed, unique location entries.
         """
         if delta_loc_df.empty:
-            logger.info(f"No location entry to be transformed.")
+            logger.info("No location entry to be transformed.")
             return pd.DataFrame()
 
         else:
-            logger.info(f"Transforming new location entries.")
+            logger.info("Transforming new location entries.")
 
             location_data = []
             for _, row in delta_loc_df.iterrows():
@@ -114,7 +114,7 @@ class DeltaLoader():
                 })
 
             loc_df = pd.DataFrame(data=location_data, columns=list(location_data[0].keys()))
-            unique_loc_df = loc_df[loc_df.duplicated() == False]
+            unique_loc_df = loc_df[loc_df.duplicated() is False]
 
             logger.info(f"Transformed {len(unique_loc_df)} new, unique location entries.")
 
@@ -126,15 +126,15 @@ class DeltaLoader():
         Args:
             unique_loc_df (pd.DataFrame): DataFrame containing unique location entries to load.
         """
-        unique_countries = unique_loc_df[unique_loc_df.duplicated() == False]
+        unique_countries = unique_loc_df[unique_loc_df.duplicated() is False]
 
         with self.psql_connection as conn:
             with conn.cursor() as cur:
                 # Check for new entries before loading.
                 if self._get_delta_load_count(cur) == 0:
-                    logger.info(f"Skipping insertion as there is no new entry.")
+                    logger.info("Skipping insertion as there is no new entry.")
                 else:
-                    logger.info(f"Starting insertion into tables.")
+                    logger.info("Starting insertion into tables.")
 
                     logger.info(f"\t'{tables.DIM_LOCATION_TABLE}'")
                     for _, row in unique_countries.iterrows():
@@ -156,13 +156,15 @@ class DeltaLoader():
                     logger.info(f"\t'{tables.FACT_TRANSLATION_TABLE}'")
                     cur.execute(dl_queries.FACT_INSERT_CMD)
 
-                    logger.info(f"Insertion finished.")
+                    logger.info("Insertion finished.")
+
 
 def main():
     """Main entry point for the script.
     Creates an instance of DeltaLoader and runs the ETL process.
     """
     DeltaLoader().run()
+
 
 if __name__ == "__main__":
     main()

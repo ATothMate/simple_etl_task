@@ -51,7 +51,7 @@ class Location():
             continent = self._code_to_continent(info.alpha_2)
             country_name = self.country_name_arg
 
-        except LookupError as _:
+        except LookupError:
             country_name = "UNKNOWN"
             country_code = "N/A"
             continent = "UNKNOWN"

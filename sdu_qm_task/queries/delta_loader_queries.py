@@ -1,4 +1,10 @@
-from sdu_qm_task.queries.table_names import *
+from sdu_qm_task.queries.table_names import (
+    PRELOAD_TRANSACTION_TABLE,
+    DIM_DATE_TABLE,
+    DIM_ITEM_TABLE,
+    DIM_LOCATION_TABLE,
+    FACT_TRANSLATION_TABLE
+)
 
 UNIQUE_DELTA_PRELOAD_TABLE = "unique_delta_preload"
 
@@ -9,17 +15,17 @@ WITH fact_sub AS (
 ), {UNIQUE_DELTA_PRELOAD_TABLE} AS (
     SELECT *
     FROM (
-		SELECT
-			*,
-			ROW_NUMBER() OVER(PARTITION BY hash_id ORDER BY created_at) AS row_num
-		FROM {PRELOAD_TRANSACTION_TABLE}
-	)
+        SELECT
+            *,
+            ROW_NUMBER() OVER(PARTITION BY hash_id ORDER BY created_at) AS row_num
+        FROM {PRELOAD_TRANSACTION_TABLE}
+    )
     WHERE
-		row_num = 1
-		AND CASE
-	        WHEN (SELECT max_created_date FROM fact_sub) IS NULL THEN TRUE
-	        ELSE (SELECT max_created_date FROM fact_sub) < created_at
-	    END
+        row_num = 1
+        AND CASE
+            WHEN (SELECT max_created_date FROM fact_sub) IS NULL THEN TRUE
+            ELSE (SELECT max_created_date FROM fact_sub) < created_at
+        END
 )"""
 
 COUNT_DELTA_QUERY = f"""
@@ -84,7 +90,7 @@ ON CONFLICT (id) DO NOTHING
 FACT_INSERT_CMD = f"""
 {DELTA_QUERY}
 INSERT INTO {FACT_TRANSLATION_TABLE}
-SELECT 
+SELECT
     hash_id,
     transaction_id,
     user_id,

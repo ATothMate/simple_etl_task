@@ -60,7 +60,7 @@ def parse_arguments() -> str:
 
 class PreLoader():
     """Class responsible for loading data from source files into a PostgreSQL database.
-    It follows the Extract-Transform-Load (ETL) pattern; extracting data from newly available 
+    It follows the Extract-Transform-Load (ETL) pattern; extracting data from newly available
      source files, transforming the data as needed, and loading it into the preload tables.
     """
     def __init__(self, folder: str) -> None:
@@ -141,8 +141,8 @@ class PreLoader():
             bool: True if the timezone is known; otherwise, False.
         """
         return True if (
-            transaction_time.find("GMT") != -1 or 
-            transaction_time.find("UTC") != -1
+            transaction_time.find("GMT") != -1
+            or transaction_time.find("UTC") != -1
         ) else False
 
     @staticmethod
@@ -172,11 +172,11 @@ class PreLoader():
             return datetime.strptime(transaction_time, DT_WITH_TZ_FORMAT)
 
         else:
-            for tz in TIMEZONES.keys():
-                if tz in transaction_time:
-                    untimezoned_time = transaction_time.replace(tz, " ").strip()
+            for tzone in TIMEZONES.keys():
+                if tzone in transaction_time:
+                    untimezoned_time = transaction_time.replace(tzone, " ").strip()
                     dt_time = datetime.strptime(untimezoned_time, DT_WO_TZ_FORMAT)
-                    return dt_time.astimezone(TIMEZONES.get(tz))
+                    return dt_time.astimezone(TIMEZONES.get(tzone))
 
         logger.error(
             f"Can not convert timestamp: '{transaction_time}', as timezone is not in "
@@ -216,7 +216,7 @@ class PreLoader():
 
         csv_files = list(Path(self.folder).glob("*.csv"))
         logger.info(f"Found {len(csv_files)} source CSV files.")
-        
+
         if csv_files:
             if db_source_files:
                 delta_csv_files = [cf for cf in csv_files if cf.name not in db_source_files]
@@ -304,6 +304,7 @@ def main(folder: str):
         folder (str): path to the folder containing source files.
     """
     PreLoader(folder).run()
+
 
 if __name__ == "__main__":
     # Parse command line argument for folder path.
