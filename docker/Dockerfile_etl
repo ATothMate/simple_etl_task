@@ -29,10 +29,6 @@ COPY ./docker/scripts/run_feeder.sh /app/run_feeder.sh
 COPY ./docker/scripts/run_pre_loader.sh /app/run_pre_loader.sh
 COPY ./docker/scripts/run_delta_loader.sh /app/run_delta_loader.sh
 
-# Copy data folders
-COPY ./data_folder_source/ /app/data_folder_source/
-COPY ./data_folder_monitor/ /app/data_folder_monitor/
-
 # Copy Python scripts for the ETL & Feeder service
 COPY ./sdu_qm_task/__init__.py /app/sdu_qm_task/__init__.py
 COPY ./sdu_qm_task/connect.py /app/sdu_qm_task/connect.py

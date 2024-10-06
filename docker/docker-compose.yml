@@ -52,6 +52,10 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PORT: ${POSTGRES_PORT}
+    volumes:
+      - ../data_folder_source/:/app/data_folder_source/
+      - ../data_folder_monitor/:/app/data_folder_monitor/
+      - ../data_folder_archive/:/app/archive/
     depends_on:
       postgres:
         condition: service_healthy
