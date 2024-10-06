@@ -114,7 +114,7 @@ class DeltaLoader():
                 })
 
             loc_df = pd.DataFrame(data=location_data, columns=list(location_data[0].keys()))
-            unique_loc_df = loc_df[loc_df.duplicated() is False]
+            unique_loc_df = loc_df[loc_df.duplicated() == False]
 
             logger.info(f"Transformed {len(unique_loc_df)} new, unique location entries.")
 
@@ -126,7 +126,7 @@ class DeltaLoader():
         Args:
             unique_loc_df (pd.DataFrame): DataFrame containing unique location entries to load.
         """
-        unique_countries = unique_loc_df[unique_loc_df.duplicated() is False]
+        unique_countries = unique_loc_df[unique_loc_df.duplicated() == False]
 
         with self.psql_connection as conn:
             with conn.cursor() as cur:

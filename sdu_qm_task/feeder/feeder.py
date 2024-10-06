@@ -13,7 +13,7 @@ logger = get_logger(__file__)
 BASE_FOLDER = Path(__file__).parents[2]
 
 # Log message template for moving files.
-MOVE_INFO = "Moving source file: '{{src}}' to destination '{{dst}}'."
+MOVE_INFO = f"Moving source file: '{{src}}' to destination '{{dst}}'."
 
 
 def parse_arguments() -> Tuple[str, str]:
