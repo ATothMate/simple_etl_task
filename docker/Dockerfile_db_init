@@ -1,0 +1,39 @@
+FROM python:3.12-slim
+
+# Set Python environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Install necessary system dependencies
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install the required Python packages
+RUN pip install --upgrade pip && \
+    pip install \
+        pandas \
+        psycopg2-binary
+
+# Copy Python scripts for the DB initializer service
+COPY ./sdu_qm_task/__init__.py /app/sdu_qm_task/__init__.py
+COPY ./sdu_qm_task/connect.py /app/sdu_qm_task/connect.py
+COPY ./sdu_qm_task/logger_conf.py /app/sdu_qm_task/logger_conf.py
+COPY ./sdu_qm_task/db_init /app/sdu_qm_task/db_init
+
+COPY ./sdu_qm_task/queries/table_names.py \
+        /app/sdu_qm_task/queries/table_names.py
+
+COPY ./sdu_qm_task/queries/create_table_queries.py \
+        /app/sdu_qm_task/queries/create_table_queries.py
+
+# Set working directory
+WORKDIR /app
+
+# Add working directory to Path, Set PYTHONPATH
+ENV PATH=/app:${PATH}
+ENV PYTHONPATH=/app/sdu_qm_task
+
+# Set bash as the entrypoint
+ENTRYPOINT ["python", "-m", "sdu_qm_task.db_init.db_initializer"]

@@ -1,0 +1,65 @@
+services:
+  # Service for PostgreSQL database
+  postgres:
+    image: postgres:17.0
+    container_name: postgres_db
+    # Set PSQL environmental variables from .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5431:5432"
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD-SHELL", "PGUSER=postgres pg_isready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Service for initializing the PSQL DB
+  database_init:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile_db_init
+    container_name: database_init
+    # Set PSQL environmental variables from .env
+    environment:
+      POSTGRES_HOST: postgres_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - default
+
+  # Service for the ETL process
+  etl:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile_etl
+    container_name: etl_service
+    # Set PSQL environmental variables from .env
+    environment:
+      POSTGRES_HOST: postgres_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - default
+
+# Define the common network for services
+networks:
+  default:
+    driver: bridge

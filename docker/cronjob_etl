@@ -1,0 +1,2 @@
+# Run the processes every 1 minutes
+*/1 * * * * /app/run_feeder.sh; /app/run_pre_loader.sh; /app/run_delta_loader.sh >> /var/log/cron.log 2>&1
