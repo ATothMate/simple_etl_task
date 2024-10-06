@@ -13,5 +13,6 @@ def psql_connection():
         port="port"
     )
 
+
 def test_get_connection_string(psql_connection):
-    assert psql_connection.get_connection_string() == f"postgresql://user:password@host:port/dbname"
+    assert psql_connection.get_connection_string() == "postgresql://user:password@host:port/dbname"

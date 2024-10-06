@@ -11,15 +11,18 @@ from sdu_qm_task.feeder import feeder
 def folder():
     return Path(Path(__file__).parents[1], "data").resolve().as_posix()
 
+
 @pytest.fixture(scope="module")
 def empty_folder():
     with tempfile.TemporaryDirectory() as td:
         yield Path(td)
 
+
 @pytest.fixture(scope="module")
 def temp_file():
     with tempfile.NamedTemporaryFile(suffix='.csv') as tf:
         yield Path(tf.name)
+
 
 @pytest.fixture(scope="module")
 def temp_file_2():
@@ -32,10 +35,12 @@ def test_get_available_files(folder, empty_folder):
 
     assert feeder.get_available_files(empty_folder.as_posix()) == []
 
+
 def test_get_next_file(folder, empty_folder):
     assert feeder.get_next_file(folder) == Path(folder, "sample_df.csv")
 
     assert feeder.get_next_file(empty_folder.as_posix()) is None
+
 
 def test_move_file(temp_file, empty_folder):
     assert temp_file.exists()
@@ -45,6 +50,7 @@ def test_move_file(temp_file, empty_folder):
 
     assert not temp_file.exists()
     assert expected_file.exists()
+
 
 def test_main(temp_file_2, empty_folder):
     assert temp_file_2.exists()
@@ -57,4 +63,3 @@ def test_main(temp_file_2, empty_folder):
     not_available_folder = Path(temp_file_2.parent, "unavailable_folder")
     with pytest.raises(ValueError):
         feeder.main(not_available_folder.as_posix(), empty_folder.as_posix())
-
