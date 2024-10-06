@@ -1,0 +1,7 @@
+flake8==7.1.1
+pandas==2.2.3
+psycopg2==2.9.9
+pycountry==24.6.1
+pycountry-convert==0.7.2
+pytest==8.3.3
+SQLAlchemy==2.0.35
