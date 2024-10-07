@@ -15,16 +15,16 @@ This center accepts transactions from all over the world. The current state of
 |...|...|...|...|...|...|...|...|
 |259770|6008596|Tue May 22 08:48:00 IST 2018|478464|LANTERN CREAM GAZEBO |18|6.84|Cyprus|
 
-They wish to warehouse all incoming transaction snapshots, and wish to seek
+They wish to warehouse all incoming transaction snapshots and seek
  advisory on how they may enhance their transaction recording processes.
 
 During the initial discussions, certain concerns were mentioned:
 - the transaction recording process had a bug, during a certain period, which
   might affect certain transaction timestamps. Specifically, the currently
   used timezones are IST (Ireland Standard Time), UTC, and GMT. Any timestamp
-   containing other timezones should be somehow flagged for evalution.
+   containing other time zones should be somehow flagged for evaluation.
 - due to another bug, certain transactions might have been recorded multiple
-  times, filtering these entries are particularly important.
+  times, filtering these entries is particularly important.
 
 ## Solution
 
@@ -35,15 +35,21 @@ The current state of the service is able to:
 
 ### Addition
 
-During the development process certain pain-points surfaced, which might take a
- toll on the overall business and decision-making:
+During the development process, certain pain points surfaced, which might take a
+ the toll on the overall business and decision-making:
 - generally, it seems that transaction times are not granular enough to enable
   finer insight into the data and later the business. Improving the recording
   process would greatly benefit both the warehousing and any data-driven
   decision-making later.
 - also, it seems that certain item codes are the same for products with
   different item description. Should this issue be handled, it would also
-  support the above mentioned causes.
+  support the above-mentioned causes.
+- it was also quite interesting to see, how certain countries were recorded
+  as it can be observed with the final query on the fact_transaction table, 
+  the second largest revenue comes from the continent "UNKOWN", which is a
+  result of unconventional country names and notations. The decision was made to
+  include these in the form of "UNKNOWN"s to raise awareness, and to hasten
+  any decision regarding.
 
 ## Prerequisites
 
@@ -91,7 +97,7 @@ The underlying POC solution builds on 3 services:
 To initiate the demonstrative process, run the following command from the base
  folder:
 ``` shell
-docker compose -f .\docker\docker-compose.yml up
+    docker compose -f .\docker\docker-compose.yml up
 ```
 
 Upon executing the command, the defined images will be created and the services
@@ -101,8 +107,8 @@ Upon executing the command, the defined images will be created and the services
 
 Upon executing the command, the images and the containers will be created.
 
-The main service, on which the other to are dependant, is the `postgres_db`.
- After creation a regular health check is run on this service. The service
+The main service, on which the other to are dependent, is the `postgres_db`.
+ After creation, a regular health check is run on this service. The service
  will remain active.
 
 The next service is the `database_init`, which waits until the `postgres_db`
@@ -123,8 +129,8 @@ Finally, the `etl_service` starts its processes. This service contains 3
   follows the Extract-Transform-Load (ETL) pattern; extracting data from newly
   available source files, transforming the data as needed, and loading it into
   the *preload table*.  
-  The service also creates archives of unvonvertible transaction records, to
-  highlight timestamp related issues and enable further decission-making.  
+  The service also creates archives of unconvertible transaction records, to
+  highlight timestamp-related issues and enable further decision-making.  
   - Source folder during the demonstration: `data_folder_monitor`.  
   - Archive folder during the demonstration: `data_folder_archive`.  
 
@@ -132,17 +138,17 @@ Finally, the `etl_service` starts its processes. This service contains 3
   detect any new entries for warehousing, enabling business processes to analyze
   the transaction data in the desired fashion.
 
-With the current demonstration the process takes 3 cycles to process all source
- files (due to the 3 starting *CSV* files). After that the log messages should
+With the current demonstration, the process takes 3 cycles to process all source
+ files (due to the 3 starting *CSV* files). After that, the log messages should
  contain information:
  - by the ***feeder***:  
-   Looking for available source file in: /app/data_folder_source.  
+   Looking for available source files in: /app/data_folder_source.  
    Found no processable file.
  - by the ***pre_loader***:  
    Found 0 new source CSV files compared to the DB.  
    No data to insert to 'preload_transaction'.
  - by the ***delta_loader***:  
-   Found 0 new entries in 'preload_transaction' table.  
+   Found 0 new entries in the 'preload_transaction' table.  
    Skipping insertion as there is no new entry.
 
 After these messages, **the demonstration can be stopped**, by hitting: `Ctrl+c`
