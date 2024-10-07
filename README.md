@@ -228,8 +228,8 @@ ORDER BY duplicate_count DESC;
 -- with 'ac8958e78f07303407551793831b0407' present 10 times in the table.
 
 -- to inspect the infamous transaction
-select * from preload_transaction
-where hash_id = '9d89c851ae57c09887225b20041c0bb6'
+SELECT * FROM preload_transaction
+WHERE hash_id = '9d89c851ae57c09887225b20041c0bb6'
 -- results are shown in the table below
 ```
 |id|hash_id|source_file|transaction_id|user_id|transaction_time|item_code|item_description|item_quantity|cost_per_item|country|created_at|
