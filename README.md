@@ -1,6 +1,6 @@
 # sdu_qm_task
 
-An exemplary repository to contain a simple ETL solution.
+Repository to contain a simple ETL solution.
 
 ## Background
 
@@ -97,11 +97,13 @@ The underlying POC solution builds on 3 services:
 To initiate the demonstrative process, run the following command from the base
  folder:
 ``` shell
-    docker compose -f .\docker\docker-compose.yml up
+docker compose -f .\docker\docker-compose.yml up
 ```
 
 Upon executing the command, the defined images will be created and the services
- will start their processes.
+ will start their processes. The whole demonstration takes approximately
+ 3-4 minutes and is orchestrated by the cron job which initiates and imitates
+ a real-world nightly batch processing.
 
 ### Step-by-Step
 
@@ -138,6 +140,18 @@ Finally, the `etl_service` starts its processes. This service contains 3
   detect any new entries for warehousing, enabling business processes to analyze
   the transaction data in the desired fashion.
 
+At the very beginning new folders will be created in the base folder of the
+ repository, to initiate the 3 data container folders:
+- `data_folder_source` - the source folder of the *feeder* sub-service. It is
+  being monitored periodically, and if there is an available source file, it
+  will be moved to the input folder of the *pre-loader* sub-service.
+- `data_folder_monitor`: the input folder for the *pre_loader* sub-service. The
+  service periodically checks the content and creates any delta load compared to
+  the currently available in the DB.
+- `data_folder_archive`: this folder is responsible for storing any
+  unconvertible set of entries after each *pre_loader* cycle. These archived
+  sets can be evaluated later.
+
 With the current demonstration, the process takes 3 cycles to process all source
  files (due to the 3 starting *CSV* files). After that, the log messages should
  contain information:
@@ -152,6 +166,36 @@ With the current demonstration, the process takes 3 cycles to process all source
    Skipping insertion as there is no new entry.
 
 After these messages, **the demonstration can be stopped**, by hitting: `Ctrl+c`
+
+### Results of the demonstration
+
+Ultimately (after 3 cycles) the **data folders** should contain:
+
+- `data_folder_source` - empty as the *feeder* sub-service moved all the source
+  files to the `data_folder_monitor`.
+- `data_folder_monitor` - 3 files, which were moved be the
+  *feeder* process and processed by the *pre_loader* processes.
+- `data_folder_archive` - 2 archived files (1 from `transactions_1_100k.csv` and
+  1 from `transactions_2_100k.csv`), which store the entries (3 from the former,
+  3 from the latter source file) that were not fit for the transformation during
+  the *pre_loader* ETL process.  
+The 6 entries in the archived folder have truly unexpected time zones in their
+ timestamp attributes, confirming the filtering feature of the *pre_loader*
+   - Mon Jul 02 07:33:00 `XST` 2018
+   - Sat Feb 24 12:46:00 `JST` 2018
+   - Sun Feb 25 11:56:00 `ABC` 2018
+   - Tue Oct 02 08:04:00 `YYZ` 2018
+   - Wed May 30 08:04:00 `TXT` 2018
+   - Mon Dec 24 12:40:00 `3ZP` 2018
+
+
+The **tables in the database** should contain:
+
+- `preload_transaction` - 299_994 entries (3*100_000 - 6 unconvertible).
+- `dim_location` - 34 entries (33 valid location entries and 1 UNKNOWN).
+- `dim_item` - 3_314 entries.
+- `dim_date` - 305 entries.
+- `fact_trnsaction` - 257_244 deduplicated entries.
 
 #### Inspection
 
@@ -179,7 +223,28 @@ FROM preload_transaction
 GROUP BY hash_id
 HAVING COUNT(*) > 1
 ORDER BY duplicate_count DESC;
+
+-- resulting in 42_272 rows.
+-- with 'ac8958e78f07303407551793831b0407' present 10 times in the table.
+
+-- to inspect the infamous transaction
+select * from preload_transaction
+where hash_id = '9d89c851ae57c09887225b20041c0bb6'
+-- results are shown in the table below
 ```
+|id|hash_id|source_file|transaction_id|user_id|transaction_time|item_code|item_description|item_quantity|cost_per_item|country|created_at|
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+|32114|ac8958e78f07303407551793831b0407|transactions_1_100k.csv|6110764|355383|2018-08-17 07:37:00|476658|PINK REGENCY TEACUP AND SAUCER|3|4.08|United Kingdom|2024-10-07 09:03:02.941009|
+|36393|ac8958e78f07303407551793831b0407|transactions_1_100k.csv|6110764|355383|2018-08-17 07:37:00|476658|PINK REGENCY TEACUP AND SAUCER|3|4.08|United Kingdom|2024-10-07 09:03:02.941009|
+|203869|ac8958e78f07303407551793831b0407|transactions_3_100k.csv|6110764|355383|2018-08-17 07:37:00|476658|PINK REGENCY TEACUP AND SAUCER|3|4.08|United Kingdom|2024-10-07 09:05:02.65903|
+|227454|ac8958e78f07303407551793831b0407|transactions_3_100k.csv|6110764|355383|2018-08-17 07:37:00|476658|PINK REGENCY TEACUP AND SAUCER|3|4.08|United Kingdom|2024-10-07 09:05:02.65903|
+|126393|ac8958e78f07303407551793831b0407|transactions_2_100k.csv|6110764|355383|2018-08-17 07:37:00|476658|PINK REGENCY TEACUP AND SAUCER|3|4.08|United Kingdom|2024-10-07 09:04:01.891237|
+|201241|ac8958e78f07303407551793831b0407|transactions_3_100k.csv|6110764|355383|2018-08-17 07:37:00|476658|PINK REGENCY TEACUP AND SAUCER|3|4.08|United Kingdom|2024-10-07 09:05:02.65903|
+|272552|ac8958e78f07303407551793831b0407|transactions_3_100k.csv|6110764|355383|2018-08-17 07:37:00|476658|PINK REGENCY TEACUP AND SAUCER|3|4.08|United Kingdom|2024-10-07 09:05:02.65903|
+|26419|ac8958e78f07303407551793831b0407|transactions_1_100k.csv|6110764|355383|2018-08-17 07:37:00|476658|PINK REGENCY TEACUP AND SAUCER|3|4.08|United Kingdom|2024-10-07 09:03:02.941009|
+|124898|ac8958e78f07303407551793831b0407|transactions_2_100k.csv|6110764|355383|2018-08-17 07:37:00|476658|PINK REGENCY TEACUP AND SAUCER|3|4.08|United Kingdom|2024-10-07 09:04:01.891237|
+|275305|ac8958e78f07303407551793831b0407|transactions_3_100k.csv|6110764|355383|2018-08-17 07:37:00|476658|PINK REGENCY TEACUP AND SAUCER|3|4.08|United Kingdom|2024-10-07 09:05:02.65903|
+
 
 - **Delta-load tables**: `dim_location`, `dim_item`, `dim_date`,
   `fact_transaction`
@@ -215,7 +280,17 @@ LEFT JOIN dim_item AS di
 	ON  ft.item_id = di.id
 GROUP BY dl.continent
 ORDER BY total_revenue DESC;
+-- results are shown in the table below
 ```
+
+|continent|total_transactions|total_revenue|most_frequent_item|item_count|
+|:-:|:-:|:-:|:-:|:-:|
+|Europe|250_975|18_045_122.28|ZINC WIRE SWEETHEART LETTER TRAY|250_975|
+|UNKNOWN|4_459|550_764.42|ZINC WIRE KITCHEN ORGANISER|4_459|
+|Oceania|643|281_928.48|YELLOW GIANT GARDEN THERMOMETER|643|
+|Asia|924|163_133.52|ZINC METAL HEART DECORATION|924|
+|North America|233|10_400.82|YELLOW COAT RACK PARIS FASHION|233|
+|South America|10|2_209.02|SET OF 6 SPICE TINS PANTRY DESIGN|10|
 
 
 ## Testing
